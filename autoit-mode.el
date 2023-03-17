@@ -551,7 +551,7 @@
 	  (setq lil-num (line-number-at-pos)))
 	(when (< 1 (- clinum lil-num))
 	  (setq lil-cont nil))
-	(message "%S %S %S" lil-cont lil-indent (cons (car lil) (car cul)))
+	;; (message "%S %S %S" lil-cont lil-indent (cons (car lil) (car cul)))
 	(indent-line-to
 	 (pcase (cons (car lil) (car cul))
 	   (`(:if . ,(or :if-branch :if-end))
