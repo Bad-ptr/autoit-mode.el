@@ -52,7 +52,7 @@
 
 (defvar autoit-font-lock-keywords
   (list
-   '("\\<\\(Case\\|Else\\|ElseIf\\|EndFunc\\|EndIf\\|EndSwitch\\|ExitLoop\\|ContinueLoop\\|For\\|To\\|Step\\|Func\\|If\\|Next\\|Select\\|Switch\\|Then\\|Until\\|WEnd\\|While\\|Return\\|Exit\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(Or\\|And\\|Switch\\|Case\\|EndSwitch\\|Select\\|EndSelect\\|ContinueCase\\|If\\|Then\\|Else\\|ElseIf\\|EndIf\\|ExitLoop\\|ContinueLoop\\|While\\|WEnd\\|Do\\|Until\\|For\\|To\\|Step\\|Next\\|Func\\|EndFunc\\|Return\\|Exit\\|With\\|EndWith\\)\\>" . font-lock-keyword-face)
    '("\\<\\(Const\\|Dim\\|Global\\|Local\\)\\>" . font-lock-keyword-face)
    '("@\\w*" . font-lock-constant-face)
    '("\\<\\(DirCreate\\|FileClose\\|FileCopy\\|FileDelete\\|FileExists\\|FileFindFirstFile\\|FileFindNextFile\\|FileGetAttrib\\|FileGetSize\\|FileOpen\\|FileReadLine\\|FileWriteLine\\)\\>" . font-lock-builtin-face)
@@ -318,9 +318,16 @@
    '(:if-oneline    . "^[ \t]*If\\s-+.+Then\\s-+.*EndIf\\>")
    '(:if-branch     . "^[ \t]*\\(Else\\|ElseIf\\s-+.+Then\\)\\>")
    '(:if-end        . "^[ \t]*EndIf\\>")
+
+   '(:select        . "^[ \t]*Select\\>")
+   '(:select-end    . "^[ \t]*EndSelect\\>")
    '(:switch        . "^[ \t]*Switch\\s-+.+")
-   '(:switch-branch . "^[ \t]*Case\\s-+.+")
    '(:switch-end    . "^[ \t]*EndSwitch\\>")
+
+   '(:case          . "^[ \t]*\\(Select\\>\\|Switch\\s-+.+\\)")
+   '(:case-branch   . "^[ \t]*Case\\s-+.+")
+   '(:case-end      . "^[ \t]*\\(EndSelect\\|EndSwitch\\)\\>")
+
    '(:for           . "^[ \t]*For\\s-+.+To\\s-+.+")
    '(:for-end       . "^[ \t]*Next\\>")
    '(:while         . "^[ \t]*While\\s-+.+")
@@ -334,14 +341,16 @@
 
 (defun autoit-indent-looking-at (&optional la-type)
   (beginning-of-line)
-  (let ((ret (find #'looking-at-p
-				   autoit-indent-regexps
-				   :test #'(lambda (fl cs)
-							 (funcall fl (cdr cs))))))
-	(if la-type
-		(when (eq la-type (car ret))
-		  ret)
-	  ret)))
+  (find #'(lambda (cs)
+			(and (looking-at-p (cdr cs))
+				 cs))
+		autoit-indent-regexps
+		:test #'(lambda (fl cs)
+				  (let ((la-cons (funcall fl cs)))
+					(if la-type
+						(when (eq la-type (car la-cons))
+						  la-cons)
+					  la-cons)))))
 
 (defun autoit-indent-looking-at-cont-p ()
   (end-of-line)
@@ -362,63 +371,71 @@
 
 (defun autoit-indent-looking-at-oneline (&optional oneline-type)
   (beginning-of-line)
-  (let ((ret (find #'looking-at-p
-				   (mapcan
-					#'(lambda (it)
-						(when (string-suffix-p "-oneline" (symbol-name (car it)))
-						  (list it)))
-					autoit-indent-regexps)
-				   :test #'(lambda (fl cs)
-							 (funcall fl (cdr cs))))))
-	(if oneline-type
-		(when (eq oneline-type (car ret))
-		  ret)
-	  ret)))
+  (find #'(lambda (cs)
+			(and (looking-at-p (cdr cs))
+				 cs))
+		(mapcan
+		 #'(lambda (it)
+			 (when (string-suffix-p "-oneline" (symbol-name (car it)))
+			   (list it)))
+		 autoit-indent-regexps)
+		:test #'(lambda (fl cs)
+				  (let ((oneline-cons (funcall fl cs)))
+					(if oneline-type
+						(when (eq oneline-type (car oneline-cons))
+						  oneline-cons)
+					  oneline-cons)))))
 
 (defun autoit-indent-looking-at-start (&optional start-type)
   (beginning-of-line)
-  (let ((ret (find #'looking-at-p
-				   (mapcan
-					#'(lambda (it)
-						(unless (search "-" (symbol-name (car it)))
-						  (list it)))
-					autoit-indent-regexps)
-				   :test #'(lambda (fl cs)
-							 (funcall fl (cdr cs))))))
-	(if start-type
-		(when (eq start-type (car ret))
-		  ret)
-	  ret)))
+  (find #'(lambda (cs)
+			(and (looking-at-p (cdr cs))
+				 cs))
+		(mapcan
+		 #'(lambda (it)
+			 (unless (search "-" (symbol-name (car it)))
+			   (list it)))
+		 autoit-indent-regexps)
+		:test #'(lambda (fl cs)
+				  (let ((start-cons (funcall fl cs)))
+					(if start-type
+						(when (eq start-type (car start-cons))
+						  start-cons)
+					  start-cons)))))
 
 (defun autoit-indent-looking-at-branch (&optional branch-type)
   (beginning-of-line)
-  (let ((ret (find #'looking-at-p
-				   (mapcan
-					#'(lambda (it)
-						(when (string-suffix-p "-branch" (symbol-name (car it)))
-						  (list it)))
-					autoit-indent-regexps)
-				   :test #'(lambda (fl cs)
-							 (funcall fl (cdr cs))))))
-	(if branch-type
-		(when (eq branch-type (car ret))
-		  ret)
-	  ret)))
+  (find #'(lambda (cs)
+			(and (looking-at-p (cdr cs))
+				 cs))
+		(mapcan
+		 #'(lambda (it)
+			 (when (string-suffix-p "-branch" (symbol-name (car it)))
+			   (list it)))
+		 autoit-indent-regexps)
+		:test #'(lambda (fl cs)
+				  (let ((branch-cons (funcall fl cs)))
+					(if branch-type
+						(when (eq branch-type (car branch-cons))
+						  branch-cons)
+					  branch-cons)))))
 
 (defun autoit-indent-looking-at-end (&optional end-type)
   (beginning-of-line)
-  (let ((ret (find #'looking-at-p
-				   (mapcan
-					#'(lambda (it)
-						(when (string-suffix-p "-end" (symbol-name (car it)))
-						  (list it)))
-					autoit-indent-regexps)
-				   :test #'(lambda (fl cs)
-							 (funcall fl (cdr cs))))))
-	(if end-type
-		(when (eq end-type (car ret))
-		  ret)
-	  ret)))
+  (find #'(lambda (cs)
+			(and (looking-at-p (cdr cs))
+				 cs))
+		(mapcan
+		 #'(lambda (it)
+			 (when (string-suffix-p "-end" (symbol-name (car it)))
+			   (list it)))
+		 autoit-indent-regexps)
+		:test #'(lambda (fl cs)
+				  (let ((end-cons (funcall fl cs)))
+					(if end-type
+						(when (eq end-type (car end-cons))
+						  end-cons)
+					  end-cons)))))
 
 (defun autoit-indent-skip-skip-backward ()
   (while (and (or (autoit-indent-looking-at-skip)
@@ -432,17 +449,19 @@
 	  (let ((do-search t)
 			(nesting-level 0)
 			(start-linum (line-number-at-pos))
-			(endkw (or end-kw
-					   (intern (concat (symbol-name block-type) "-end"))))
+			;; (endkw (or end-kw
+			;; 		   (intern (concat (symbol-name block-type) "-end"))))
 			end-start?)
 		(while do-search
 		  (cond
 		   ((setq end-start? (autoit-indent-looking-at-oneline))
 			(forward-line -1))
-		   ((setq end-start? (autoit-indent-looking-at-end endkw))
+		   ((setq end-start? (autoit-indent-looking-at-end ;; endkw
+														   ))
 			(incf nesting-level)
 			(forward-line -1))
-		   ((setq end-start? (autoit-indent-looking-at-start block-type))
+		   ((setq end-start? (autoit-indent-looking-at-start ;; block-type
+															 ))
 			(when (> nesting-level 0)
 			  (decf nesting-level))
 			(forward-line -1)
@@ -545,16 +564,29 @@
 	   (`(:if-end . ,_)
 		lil-indent)
 
-	   (`(:switch . ,(or :switch-branch :switch-end))
+	   (`(:switch . ,(or :case-branch :switch-end))
 		lil-indent)
 	   (`(:switch . ,_)
 		(+ lil-indent tab-width))
-	   (`(:switch-branch . :switch-branch)
-		lil-indent)
-	   (`(:switch-branch . ,_)
-		(+ lil-indent tab-width))
 	   (`(:switch-end . ,_)
 		lil-indent)
+
+	   (`(:select . ,(or :case-branch :select-end))
+		lil-indent)
+	   (`(:select . ,_)
+		(+ lil-indent tab-width))
+	   (`(:select-end . ,_)
+		lil-indent)
+
+	   ;; (`(:switch . :case-branch)
+	   ;; 	(+ lil-indent tab-width))
+	   ;; (`(:select . :case-branch)
+	   ;; 	(+ lil-indent tab-width))
+
+	   (`(:case-branch . :case-branch)
+		lil-indent)
+	   (`(:case-branch . ,_)
+		(+ lil-indent tab-width))
 
 	   (`(:func . :func-end)
 		lil-indent)
@@ -577,7 +609,7 @@
 	   (`(:for-end . ,_)
 		lil-indent)
 
-	   ;; (`(nil . ,(or :if :if-branch :switch :switch-branch :for :while :func))
+	   ;; (`(nil . ,(or :if :if-branch :switch :select :case-branch :for :while :func))
 	   ;; 	(+ lil-indent tab-width))
 
 	   ;; (`(,_ . :-skip)
