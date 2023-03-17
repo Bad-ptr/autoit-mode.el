@@ -439,8 +439,9 @@
 
 (defun autoit-indent-skip-skip-backward ()
   (while (and (or (autoit-indent-looking-at-skip)
-				  (nth 8 (syntax-ppss)) ; in string or comment
-				  (< 0 (car (syntax-ppss))))
+				  (nth 8 (syntax-ppss))     ; in string or comment
+				  (< 0 (car (syntax-ppss))) ; in parens
+				  )
 			  (not (bobp)))
 	(forward-line -1)))
 
@@ -516,15 +517,15 @@
 	  (forward-line -1)
 	  (autoit-indent-skip-skip-backward)
 	  lat)
-	 ((setq lat (autoit-indent-looking-at-start))
-	  (forward-line -1)
-	  (autoit-indent-skip-skip-backward)
-	  lat)
 	 ((setq lat (autoit-indent-looking-at-branch))
 	  (autoit-indent-goto-prev-branch-or-start (car lat))
 	  lat)
 	 ((setq lat (autoit-indent-looking-at-end))
 	  (autoit-indent-goto-prev-start (car lat))
+	  lat)
+	 ((setq lat (autoit-indent-looking-at-start))
+	  (forward-line -1)
+	  (autoit-indent-skip-skip-backward)
 	  lat)
 	 (t
 	  (forward-line -1)
