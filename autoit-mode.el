@@ -53,7 +53,7 @@
 (defvar autoit-font-lock-keywords
   (list
    '("\\<\\(Or\\|And\\|Switch\\|Case\\|EndSwitch\\|Select\\|EndSelect\\|ContinueCase\\|If\\|Then\\|Else\\|ElseIf\\|EndIf\\|ExitLoop\\|ContinueLoop\\|While\\|WEnd\\|Do\\|Until\\|For\\|To\\|Step\\|Next\\|Func\\|EndFunc\\|Return\\|Exit\\|With\\|EndWith\\)\\>" . font-lock-keyword-face)
-   '("\\<\\(Const\\|Dim\\|Global\\|Local\\|ByRef\\|Null\\|False\\|True\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(Const\\|Dim\\|ReDim\\|Global\\|Local\\|ByRef\\|Null\\|False\\|True\\)\\>" . font-lock-keyword-face)
    '("@\\w*" . font-lock-constant-face)
    '("\\<\\(DirCreate\\|FileClose\\|FileCopy\\|FileDelete\\|FileExists\\|FileFindFirstFile\\|FileFindNextFile\\|FileGetAttrib\\|FileGetSize\\|FileOpen\\|FileReadLine\\|FileWriteLine\\)\\>" . font-lock-builtin-face)
    '("\\<\\(WinActivate\\|WinClose\\|WinExists\\|WinGetHandle\\|WinGetPos\\|WinKill\\|WinMenuSelectItemByHandle\\|WinSetState\\)\\>" . font-lock-builtin-face)
