@@ -314,9 +314,9 @@
 
 (defvar autoit-indent-regexps
   (list
-   '(:if            . "^[ \t]*If\\s-+.+Then\\s-*\\(;+.*\\)?\\s-*$")
+   '(:if            . "^[ \t]*If\\s-+.+\\(Then\\|_\\)\\s-*\\(;+.*\\)?\\s-*$")
    '(:if-oneline    . "^[ \t]*If\\s-+.+Then\\s-+.*EndIf\\>")
-   '(:if-branch     . "^[ \t]*\\(Else\\|ElseIf\\s-+.+Then\\)\\>")
+   '(:if-branch     . "^[ \t]*\\(Else\\|ElseIf\\s-+.+\\(Then\\|_\\)\\)\\>")
    '(:if-end        . "^[ \t]*EndIf\\>")
 
    '(:select        . "^[ \t]*Select\\>")
@@ -353,10 +353,11 @@
 					la-cons)))))
 
 (defun autoit-indent-looking-at-cont-p ()
-  (end-of-line)
-  (let ((inhibit-changing-match-data t))
-	(prog1 (looking-back "_[ \t]*$")
-	  (beginning-of-line))))
+  (unless (autoit-indent-looking-at-skip )
+	(end-of-line)
+	(let ((inhibit-changing-match-data t))
+	  (prog1 (looking-back "_[ \t]*$")
+		(beginning-of-line)))))
 
 (defun autoit-indent-looking-at-skip ()
   (beginning-of-line)
