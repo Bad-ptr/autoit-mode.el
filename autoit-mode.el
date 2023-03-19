@@ -52,8 +52,8 @@
 
 (defvar autoit-font-lock-keywords
   (list
-   '("\\<\\(Not\\|Or\\|And\\|Switch\\|Case\\|EndSwitch\\|Select\\|EndSelect\\|ContinueCase\\|If\\|Then\\|Else\\|ElseIf\\|EndIf\\|ExitLoop\\|ContinueLoop\\|While\\|WEnd\\|Do\\|Until\\|For\\|To\\|Step\\|Next\\|Func\\|EndFunc\\|Return\\|Exit\\|With\\|EndWith\\)\\>" . font-lock-keyword-face)
-   '("\\<\\(Const\\|Dim\\|ReDim\\|Global\\|Local\\|ByRef\\|Null\\|False\\|True\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(Not\\|Or\\|And\\|Switch\\|Case\\|EndSwitch\\|Select\\|EndSelect\\|ContinueCase\\|If\\|Then\\|Else\\|ElseIf\\|EndIf\\|ExitLoop\\|ContinueLoop\\|While\\|WEnd\\|Do\\|Until\\|For\\|To\\|In\\|Step\\|Next\\|Func\\|EndFunc\\|Return\\|Exit\\|With\\|EndWith\\)\\>" . font-lock-keyword-face)
+   '("\\<\\(Const\\|Static\\|Volatile\\|Dim\\|ReDim\\|Global\\|Local\\|ByRef\\|Null\\|False\\|True\\|Default\\|Enum\\)\\>" . font-lock-keyword-face)
    '("@\\w*" . font-lock-constant-face)
    '("\\<\\(DirCreate\\|FileClose\\|FileCopy\\|FileDelete\\|FileExists\\|FileFindFirstFile\\|FileFindNextFile\\|FileGetAttrib\\|FileGetSize\\|FileOpen\\|FileReadLine\\|FileWriteLine\\)\\>" . font-lock-builtin-face)
    '("\\<\\(WinActivate\\|WinClose\\|WinExists\\|WinGetHandle\\|WinGetPos\\|WinKill\\|WinMenuSelectItemByHandle\\|WinSetState\\)\\>" . font-lock-builtin-face)
@@ -324,14 +324,20 @@
    '(:switch        . "^[ \t]*Switch\\s-+.+")
    '(:switch-end    . "^[ \t]*EndSwitch\\>")
 
+   '(:with          . "^[ \t]*With\\>")
+   '(:with-end      . "^[ \t]*EndWith\\>")
+
    '(:case          . "^[ \t]*\\(Select\\>\\|Switch\\s-+.+\\)")
    '(:case-branch   . "^[ \t]*Case\\s-+.+")
    '(:case-end      . "^[ \t]*\\(EndSelect\\|EndSwitch\\)\\>")
 
-   '(:for           . "^[ \t]*For\\s-+.+To\\s-+.+")
+   '(:for           . "^[ \t]*For\\s-+.+\\(To\\|In\\)\\s-+.+")
    '(:for-end       . "^[ \t]*Next\\>")
    '(:while         . "^[ \t]*While\\s-+.+")
    '(:while-end     . "^[ \t]*WEnd\\>")
+   '(:do            . "^[ \t]*Do\\>")
+   '(:do-end        . "^[ \t]*Until\\>")
+
    '(:func          . "^[ \t]*Func\\s-*\\(\\sw+\\)?\\s-*\\((.*)\\)\\s-*")
    '(:func-end      . "^[ \t]*EndFunc\\>")
    ;;'(:-skip         . "^[ \t]*\\([#;]+.*\\)?\\(If\\s-+.+Then\\s-+.+EndIf.*\\)?$")
@@ -585,6 +591,13 @@
 	   ;; (`(:select . :case-branch)
 	   ;; 	(+ lil-indent tab-width))
 
+	   (`(:with . :with-end)
+		lil-indent)
+	   (`(:with . ,_)
+		(+ lil-indent tab-width))
+	   (`(:with-end . ,_)
+		lil-indent)
+
 	   (`(:case-branch . :case-branch)
 		lil-indent)
 	   (`(:case-branch . ,_)
@@ -609,6 +622,13 @@
 	   (`(:for . ,_)
 		(+ lil-indent tab-width))
 	   (`(:for-end . ,_)
+		lil-indent)
+
+	   (`(:do . :do-end)
+		lil-indent)
+	   (`(:do . ,_)
+		(+ lil-indent tab-width))
+	   (`(:do-end . ,_)
 		lil-indent)
 
 	   ;; (`(nil . ,(or :if :if-branch :switch :select :case-branch :for :while :func))
