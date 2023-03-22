@@ -72,7 +72,7 @@
 	(modify-syntax-entry ?$  "w"   st)
 	(modify-syntax-entry ?#  "<"   st)
 	(modify-syntax-entry ?\; "<"   st)
-	(modify-syntax-entry ?\n "> ." st)
+	(modify-syntax-entry ?\n ">" st)
 	(modify-syntax-entry ?'  "\"'" st)
 	(modify-syntax-entry ?\\ "_"   st)
 	st)
